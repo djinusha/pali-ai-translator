@@ -1,14 +1,51 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. පිටුවේ සැකසුම් (Page Configuration)
+# 1. පිටුවේ සැකසුම් (Professional Look)
 st.set_page_config(
     page_title="AI පාලි පරිවර්තකය", 
     page_icon="☸️",
     layout="centered"
 )
 
-# 2. වැඩ කරන මාදිලියක් (Model) සොයා ගැනීමේ ශ්‍රිතය
+# --- පෙනුම ලස්සන කිරීමට CSS (Custom Styling) ---
+st.markdown("""
+    <style>
+    .main {
+        background-color: #fcf8f2;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 10px;
+        height: 3em;
+        background-color: #8e44ad;
+        color: white;
+        font-weight: bold;
+    }
+    .stTextArea>div>div>textarea {
+        background-color: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+    }
+    h1 {
+        color: #633971;
+        text-align: center;
+    }
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: transparent;
+        color: #7d3c98;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_state_ Wood=True)
+
+# 2. වැඩ කරන මාදිලියක් සොයා ගැනීම
 def get_working_model():
     try:
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
@@ -19,75 +56,70 @@ def get_working_model():
     except:
         return None
 
-# 3. API සම්බන්ධතාවය (API Connection)
+# 3. API සම්බන්ධතාවය
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     model_id = get_working_model()
-    if model_id:
-        model = genai.GenerativeModel(model_id)
-    else:
-        st.error("මාදිලියක් සොයාගත නොහැක.")
+    model = genai.GenerativeModel(model_id) if model_id else None
 else:
     st.error("Secrets හි API Key එක හමු නොවීය.")
 
-# 4. පරිශීලක මුහුණත (User Interface)
-st.title("☸️ AI පාලි පරිවර්තකය")
-st.write("පාලි පාඨ සිංහල සහ ඉංග්‍රීසි භාෂාවට පරිවර්තනය කරන්න.")
+# 4. ශීර්ෂය
+st.markdown("<h1>☸️ AI පාලි පරිවර්තකය</h1>", unsafe_allow_state_ Wood=True)
+st.markdown("<p style='text-align: center;'>ගැඹුරු පාලි අර්ථ සරලව සිංහලෙන් සහ ඉංග්‍රීසියෙන්</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# --- පාලි විශේෂ අකුරු පුවරුව (Virtual Keyboard) ---
-st.write("විශේෂ අකුරු අවශ්‍ය නම් මෙතැනින් තෝරන්න:")
-
-# Session State මගින් ටයිප් කරන දේ මතක තබා ගැනීම
+# --- පාලි විශේෂ අකුරු පුවරුව ---
+st.write("⌨️ **විශේෂ අකුරු පුවරුව:**")
 if 'pali_input' not in st.session_state:
     st.session_state.pali_input = ""
 
-# අකුරක් එකතු කරන ශ්‍රිතය
 def add_char(char):
     st.session_state.pali_input += char
 
-# අකුරු බොත්තම් පෙළ
 special_chars = ['ā', 'ī', 'ū', 'ṃ', 'ṇ', 'ṇḍ', 'ḷ', 'ṭ', 'ḍ', 'ñ', 'ṅ']
 cols = st.columns(len(special_chars))
-
 for i, char in enumerate(special_chars):
     if cols[i].button(char):
         add_char(char)
 
 # පාලි පාඨය ඇතුළත් කරන කොටුව
-# මෙහි value එක ලෙස session_state එක ලබා දී ඇත
 pali_text = st.text_area(
-    "පාලි වාක්‍යය මෙහි ඇතුළත් කරන්න:", 
+    "", 
     value=st.session_state.pali_input,
     height=150,
-    placeholder="උදා: Sabbe satta bhavantu sukhitatta",
+    placeholder="පාලි වාක්‍යය මෙහි ටයිප් කරන්න හෝ ඉහත බොත්තම් භාවිතා කරන්න...",
     key="text_input_area"
 )
 
-# පෙළ පිරිසිදු කරන බොත්තම
-if st.button("පිරිසිදු කරන්න (Clear)"):
-    st.session_state.pali_input = ""
-    st.rerun()
+# බොත්තම් පෙළ
+col_btn1, col_btn2 = st.columns([4, 1])
+with col_btn1:
+    translate_btn = st.button("පරිවර්තනය කරන්න", type="primary")
+with col_btn2:
+    if st.button("Clear"):
+        st.session_state.pali_input = ""
+        st.rerun()
 
 st.markdown("---")
 
-# 5. පරිවර්තනය කිරීමේ ක්‍රියාවලිය
-if st.button("පරිවර්තනය කරන්න", type="primary"):
+# 5. ප්‍රතිඵලය පෙන්වීම
+if translate_btn:
     if pali_text:
-        with st.spinner('AI මගින් විශ්ලේෂණය කරමින් පවතී...'):
+        with st.spinner('AI මගින් අර්ථ විශ්ලේෂණය කරමින් පවතී...'):
             try:
-                prompt = (
-                    f"You are a Pali language scholar. Translate the following text into "
-                    f"clear Sinhala and English. Also, provide a word-by-word breakdown table.\n\n"
-                    f"Pali Text: {pali_text}"
-                )
+                prompt = f"As a Pali scholar, translate this to Sinhala and English with word meanings: {pali_text}"
                 response = model.generate_content(prompt)
-                st.markdown("### 📝 ප්‍රතිඵලය:")
-                st.markdown(response.text)
+                st.markdown("### 📝 පරිවර්තනය සහ අර්ථ විවරණය:")
+                st.info(response.text)
             except Exception as e:
-                st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
+                st.error(f"දෝෂයක් සිදු විය: {e}")
     else:
         st.warning("කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
 
-st.markdown("---")
-st.caption("මෙම පද්ධතිය Google Gemini AI තාක්ෂණයෙන් ක්‍රියාත්මක වේ.")
+# --- ඔබගේ නම ඇතුළත් කළ Footer එක ---
+st.markdown("""
+    <div class="footer">
+        <p>Created by Jinusha Dissanayaka | Powered by Gemini AI</p>
+    </div>
+    """, unsafe_allow_html=True)
