@@ -1,49 +1,66 @@
 import streamlit as st
 import google.generativeai as genai
 
-# UI සැකසුම
-st.set_page_config(page_title="AI පාලි පරිවර්තකය", page_icon="☸️")
+# පිටුවේ සැකසුම් (Page Config)
+st.set_page_config(
+    page_title="AI පාලි පරිවර්තකය", 
+    page_icon="☸️",
+    layout="centered"
+)
 
-def get_working_model():
-    """ඔබේ API Key එකට සහය දක්වන පවතින මාදිලියක් තෝරා දෙයි"""
-    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    # වඩාත් සුදුසු මාදිලි පිළිවෙළින් පරීක්ෂා කරයි
-    for model_name in ['models/gemini-1.5-flash', 'models/gemini-1.5-pro', 'models/gemini-pro']:
-        if model_name in available_models:
-            return model_name
-    return available_models[0] if available_models else None
-
-# API Key එක Secrets හරහා ආරක්ෂිතව ලබා ගැනීම
+# --- API ආරක්ෂාව සහ සම්බන්ධතාවය ---
 try:
-    API_KEY = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=API_KEY)
-    
-    # පද්ධතියට ගැලපෙන මාදිලිය ස්වයංක්‍රීයව සොයා ගැනීම
-    model_id = get_working_model()
-    
-    if model_id:
-        model = genai.GenerativeModel(model_id)
+    # ඔබේ API Key එක Streamlit Secrets මගින් ලබා ගනී
+    # මෙය GitHub එකේ පෙනෙන්නට නැති නිසා ආරක්ෂිතයි
+    if "GEMINI_API_KEY" in st.secrets:
+        API_KEY = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=API_KEY)
+        
+        # පද්ධතියට ගැලපෙන හොඳම Model එක තෝරා ගැනීම
+        model = genai.GenerativeModel('gemini-1.5-flash')
     else:
-        st.error("ඔබේ API Key එක සඳහා කිසිදු Gemini මාදිලියක් හමු නොවීය.")
-
+        st.error("දෝෂයකි: GEMINI_API_KEY යන්න Secrets හි හමු නොවීය.")
 except Exception as e:
-    st.error(f"API සම්බන්ධ වීමේ ගැටලුවකි: {e}")
+    st.error(f"පද්ධතිය පණ ගැන්වීමේදී දෝෂයක් සිදු විය: {e}")
 
+# --- පරිශීලක මුහුණත (User Interface) ---
 st.title("☸️ AI පාලි පරිවර්තකය")
+st.subheader("පාලි පාඨ සිංහල සහ ඉංග්‍රීසි භාෂාවට පරිවර්තනය කරන්න")
 st.markdown("---")
 
-pali_text = st.text_area("පාලි වාක්‍යය මෙහි ඇතුළත් කරන්න:", 
-                         placeholder="උදා: Sabbe satta bhavantu sukhitatta")
+# පාලි වාක්‍යය ඇතුළත් කරන කොටුව
+pali_text = st.text_area(
+    "පාලි වාක්‍යය මෙහි ඇතුළත් කරන්න:", 
+    placeholder="උදා: Sabbe satta bhavantu sukhitatta",
+    height=150
+)
 
+# පරිවර්තනය කිරීමේ බොත්තම
 if st.button("පරිවර්තනය කරන්න"):
     if pali_text:
-        with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
+        with st.spinner('AI මගින් අර්ථ විශ්ලේෂණය කරමින් පවතී...'):
             try:
-                prompt = f"As a Pali scholar, translate this to Sinhala and English with word meanings: {pali_text}"
+                # AI එකට ලබා දෙන උපදෙස් (Prompt)
+                prompt = (
+                    f"You are a Pali language scholar. Translate the following text into "
+                    f"clear Sinhala and English. Also, provide a word-by-word breakdown table.\n\n"
+                    f"Pali Text: {pali_text}"
+                )
+                
+                # ප්‍රතිඵලය ලබා ගැනීම
                 response = model.generate_content(prompt)
+                
+                # ප්‍රතිඵලය ප්‍රදර්ශනය කිරීම
                 st.markdown("### 📝 ප්‍රතිඵලය:")
-                st.write(response.text)
+                st.success("පරිවර්තනය සාර්ථකයි!")
+                st.markdown(response.text)
+                
             except Exception as e:
-                st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
+                st.error("පරිවර්තනය කිරීමේදී බාධාවක් ඇති විය.")
+                st.info(f"තාක්ෂණික දෝෂය: {e}")
     else:
-        st.warning("කරුණාකර පාලි වාක්‍යයක් ඇතුළත් කරන්න.")
+        st.warning("කරුණාකර පාලි වාක්‍යයක් හෝ පාඨයක් ඇතුළත් කරන්න.")
+
+# පාදක සටහන
+st.markdown("---")
+st.caption("මෙම පද්ධතිය Google Gemini AI තාක්ෂණයෙන් ක්‍රියාත්මක වන අතර, එය ඔබගේ API Key එක ආරක්ෂිතව භාවිතා කරයි.")
