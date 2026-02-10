@@ -60,7 +60,7 @@ def load_model():
 
 model = load_model()
 
-# 4. Header
+# 4. Header (වැදගත් කොටස සහිතව)
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
 st.markdown("<p class='sub-subtitle'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
 
@@ -84,41 +84,21 @@ with tab1:
     st.session_state.pali_text = pali_input
 
     if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
-        if not pali_input.strip():
-            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
-        elif model:
+        if pali_input and model:
             with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
                 1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
-                2. Identify the exact source in the Tipitaka (Nikaya, Sutta, or Verse).
-                3. Provide a DEEP GRAMMATICAL ANALYSIS in a table.
-                4. Mention the context (Nidana).
+                2. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number).
+                3. Provide direct references to SuttaCentral.net or Tipitaka.lk.
+                4. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table including Root, Case/Tense, Gender, and Number.
+                5. Explain complex Sandhi or Samasa.
+                6. Explain the context (Nidana).
                 """
                 try:
                     response = model.generate_content(prompt)
-                    st.markdown("### 📖 විශ්ලේෂණය (Analysis Result):")
+                    st.markdown("### 📖 විශ්ලේෂණය:")
                     st.info(response.text)
-                    
-                    st.divider()
-                    
-                    # --- DIRECT RESOURCE LINKS ---
-                    st.markdown("#### 🔗 මූලාශ්‍ර ගවේෂණය (Search Exact Source):")
-                    st.write("ඉහත සඳහන් කළ මූලාශ්‍රය තහවුරු කර ගැනීමට පහත වෙබ් අඩවි භාවිතා කරන්න:")
-                    
-                    # මූලාශ්‍ර බොත්තම් පේළි දෙකකට සැකසීම
-                    row1_col1, row1_col2 = st.columns(2)
-                    with row1_col1:
-                        st.link_button("📖 Tipitaka.lk (Sinhala Search)", "https://tipitaka.lk/search", use_container_width=True)
-                    with row1_col2:
-                        st.link_button("🌐 SuttaCentral (English/Multi)", "https://suttacentral.net/pitaka/sutta", use_container_width=True)
-                    
-                    row2_col1, row2_col2 = st.columns(2)
-                    with row2_col1:
-                        st.link_button("🔍 Digital Pali Reader", "https://www.digitalpalireader.online/", use_container_width=True)
-                    with row2_col2:
-                        st.link_button("📖 Access to Insight", "https://www.accesstoinsight.org/", use_container_width=True)
-                        
                 except Exception as e:
                     st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
 
@@ -127,14 +107,16 @@ with tab2:
     eng_input = st.text_area("Enter English text:", height=150, placeholder="Type English here...")
     
     if st.button("Translate to Pali", type="primary", use_container_width=True):
-        if not eng_input.strip():
-            st.warning("⚠️ Please enter text to translate.")
-        elif model:
+        if eng_input and model:
             with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
-                prompt = f"Translate this English text to Classical Pali with grammatical notes: {eng_input}"
+                prompt = f"""
+                1. Translate this English text to Classical Pali with correct diacritics: "{eng_input}"
+                2. Provide a step-by-step grammatical explanation.
+                3. Mention relevant rules from Pali grammar (Kaccayana/Moggalana).
+                """
                 try:
                     response = model.generate_content(prompt)
-                    st.success("#### Pali Translation:")
+                    st.success("#### Pali Translation & Deep Grammar Guide:")
                     st.write(response.text)
                 except Exception as e:
                     st.error(f"Error: {e}")
@@ -145,8 +127,8 @@ with tab3:
     st.markdown("""
     <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
     <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව</a></div>
+    <div class="resource-link"><b>Digital Pali Reader:</b> <a href="https://www.digitalpalireader.online/">පද විශ්ලේෂණය</a></div>
     <div class="resource-link"><b>WisdomLib:</b> <a href="https://www.wisdomlib.org/pali-dictionary">පාලි - ඉංග්‍රීසි ශබ්දකෝෂය</a></div>
-    <div class="resource-link"><b>PTS:</b> <a href="https://www.pts.org.uk/">Pali Text Society නිල වෙබ් අඩවිය</a></div>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Powered by Gemini AI</div>", unsafe_allow_html=True)
