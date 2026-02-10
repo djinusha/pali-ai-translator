@@ -2,38 +2,15 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. පිටුවේ සැකසුම්
-st.set_page_config(
-    page_title="Pali AI Universal Scholar", 
-    page_icon="☸️", 
-    layout="wide"
-)
+st.set_page_config(page_title="Pali AI Universal Scholar", page_icon="☸️", layout="wide")
 
 # --- CSS Styling ---
 st.markdown("""
     <style>
     .stApp { background-color: #fdfaf5; }
-    .main-title { 
-        color: #4a235a; 
-        text-align: center; 
-        font-size: 30px; 
-        font-weight: bold; 
-        padding: 10px;
-        border-bottom: 3px solid #8e44ad;
-    }
-    .resource-link {
-        background-color: #f4ecf7;
-        padding: 10px;
-        border-radius: 5px;
-        border-left: 5px solid #8e44ad;
-        margin: 5px 0px;
-    }
-    .footer { 
-        position: relative;
-        text-align: center; 
-        padding: 20px; 
-        color: #7d3c98;
-        font-weight: bold;
-    }
+    .main-title { color: #4a235a; text-align: center; font-size: 32px; font-weight: bold; border-bottom: 3px solid #8e44ad; padding-bottom: 10px; }
+    .grammar-box { background-color: #fcf3cf; padding: 15px; border-radius: 10px; border-left: 5px solid #f1c40f; }
+    .footer { text-align: center; padding: 20px; color: #7d3c98; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -43,29 +20,26 @@ def load_model():
         try:
             genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
             available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            preferred_models = ['models/gemini-1.5-flash', 'models/gemini-pro', 'gemini-1.5-flash']
+            preferred_models = ['models/gemini-1.5-flash', 'models/gemini-pro']
             selected_model = next((m for m in preferred_models if m in available_models), available_models[0])
             return genai.GenerativeModel(selected_model)
-        except Exception as e:
-            st.error(f"API සම්බන්ධතාවයේ දෝෂයකි: {e}")
-            return None
+        except Exception: return None
     return None
 
 model = load_model()
 
 # 4. Header
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>ගැඹුරු ව්‍යාකරණ විශ්ලේෂණය සහ මූලාශ්‍ර සහිතයි</p>", unsafe_allow_html=True)
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["🔄 පාලි ➔ සිංහල/English", "🔡 English ➔ පාලි", "📚 බාහිර මූලාශ්‍ර"])
 
-# --- Tab 1: පාලි සිට අනෙක් භාෂාවලට (මූලාශ්‍ර සමඟ) ---
+# --- Tab 1: පාලි සිට අනෙක් භාෂාවලට (ගැඹුරු ව්‍යාකරණ සමඟ) ---
 with tab1:
-    st.subheader("පාලි පාඨය, අර්ථය සහ මූලාශ්‍ර")
+    st.subheader("පාලි විශ්ලේෂණය (Translation & Deep Grammar)")
     
-    if 'pali_text' not in st.session_state:
-        st.session_state.pali_text = ""
+    if 'pali_text' not in st.session_state: st.session_state.pali_text = ""
 
     with st.expander("⌨️ පාලි විශේෂ අකුරු පුවරුව"):
         char_list = ['ā', 'ī', 'ū', 'ṃ', 'ṇ', 'ḷ', 'ṭ', 'ḍ', 'ñ', 'ṅ', 'ṇḍ']
@@ -75,56 +49,59 @@ with tab1:
                 st.session_state.pali_text += char
                 st.rerun()
 
-    pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150, placeholder="ගාථාවක් හෝ පාලි පාඨයක් මෙහි ඇතුළත් කරන්න...")
+    pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150, placeholder="ගාථාවක් හෝ පාලි පාඨයක් මෙහි යොදන්න...")
     st.session_state.pali_text = pali_input
 
-    if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
+    if st.button("විශ්ලේෂණය ආරම්භ කරන්න", type="primary", use_container_width=True):
         if pali_input and model:
-            with st.spinner('දත්ත සහ මූලාශ්‍ර විශ්ලේෂණය කරමින් පවතී...'):
-                # AI එකට දෙන ප්‍රබල උපදෙස් (Smart Prompt)
+            with st.spinner('ව්‍යාකරණ සහ මූලාශ්‍ර පරීක්ෂා කරමින් පවතී...'):
+                # AI එකට දෙන ඉතා ගැඹුරු උපදෙස් (Deep Grammar Prompt)
                 prompt = f"""
-                As a Pali scholar and Tipitaka expert:
-                1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
-                2. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number).
-                3. Provide 2-3 direct URLs or references to websites like SuttaCentral.net or Tipitaka.lk where this text can be found.
-                4. Give a word-by-word meaning table.
-                5. Briefly explain the context (Nidana) if it is a famous sutta or gatha.
+                As a world-class Pali Grammarian and Philologist:
+                1. Translate this Pali text into Sinhala and English: "{pali_input}"
+                2. Identify the Tipitaka source (Nikaya/Sutta/Verse).
+                3. Provide a DEEP GRAMMATICAL ANALYSIS for each word:
+                   - Root (Dhatu)
+                   - Case (Vibhakti) for nouns or Tense/Mood for verbs
+                   - Gender (Linga) and Number (Vacana)
+                   - Sandhi or Samasa (if applicable)
+                4. Explain any complex grammatical structures used.
+                5. Provide direct source URLs (Tipitaka.lk, SuttaCentral).
                 """
                 try:
                     response = model.generate_content(prompt)
-                    st.markdown("### 📖 විශ්ලේෂණය සහ මූලාශ්‍ර:")
+                    st.markdown("---")
+                    st.markdown("### 📖 සම්පූර්ණ විවරණය:")
                     st.info(response.text)
-                except Exception as e:
-                    st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
-
-# --- Tab 2: ඉංග්‍රීසි සිට පාලි (වැඩිදුර සම්පත් සමඟ) ---
-with tab2:
-    st.subheader("English to Pali Translation & Learning Resources")
-    eng_input = st.text_area("Enter English text:", height=150, placeholder="පාලි භාෂාවට හැරවීමට අවශ්‍ය ඉංග්‍රීසි පාඨය මෙහි යොදන්න...")
-    
-    if st.button("Translate to Pali", type="primary", use_container_width=True):
-        if eng_input and model:
-            with st.spinner('පාලි භාෂාවට පරිවර්තනය වෙමින් පවතී...'):
-                prompt = f"""
-                1. Translate this English text to Classical Pali with correct diacritics: "{eng_input}"
-                2. Explain the grammatical rules used.
-                3. Recommend 1-2 Pali grammar books or online resources to learn this type of sentence structure.
-                """
-                try:
-                    response = model.generate_content(prompt)
-                    st.success("#### Pali Translation & Learning Resources:")
-                    st.write(response.text)
                 except Exception as e:
                     st.error(f"Error: {e}")
 
-# Tab 3: ස්ථිර මූලාශ්‍ර (Resources)
-with tab3:
-    st.markdown("### 📚 පාලි ධර්ම ග්‍රන්ථ සහ ශබ්දකෝෂ")
-    st.markdown("""
-    <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
-    <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව (Pali, English, etc.)</a></div>
-    <div class="resource-link"><b>Digital Pali Reader:</b> <a href="https://www.digitalpalireader.online/">පාලි ව්‍යාකරණ සහ පද විශ්ලේෂණය</a></div>
-    <div class="resource-link"><b>WisdomLib:</b> <a href="https://www.wisdomlib.org/pali-dictionary">පාලි - ඉංග්‍රීසි ශබ්දකෝෂය</a></div>
-    """, unsafe_allow_html=True)
+# --- Tab 2: ඉංග්‍රීසි සිට පාලි (ව්‍යාකරණ උපදෙස් සමඟ) ---
+with tab2:
+    st.subheader("English to Pali (Grammar Guided)")
+    eng_input = st.text_area("Enter English text:", height=150)
+    
+    if st.button("Translate to Pali", type="primary", use_container_width=True):
+        if eng_input and model:
+            with st.spinner('පාලි භාෂාවට හරවමින් පවතී...'):
+                prompt = f"""
+                1. Translate to Classical Pali: "{eng_input}"
+                2. Provide a detailed grammatical explanation of why those specific Pali words and case endings were used.
+                3. Suggest related Pali grammar rules (e.g., Kaccayana or Moggalana).
+                """
+                try:
+                    response = model.generate_content(prompt)
+                    st.success(response.text)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Powered by Gemini AI</div>", unsafe_allow_html=True)
+# Tab 3: මූලාශ්‍ර
+with tab3:
+    st.markdown("### 📚 පර්යේෂණ මෙවලම්")
+    st.markdown("""
+    - **Tipitaka.lk:** ත්‍රිපිටකයේ පාලි සහ සිංහල පාඨ සංසන්දනයට.
+    - **SuttaCentral:** ලොව පුරා භාෂා රැසකින් සූත්‍ර කියවීමට.
+    - **Pali Grammar Guide:** කච්චායන සහ මොග්ගල්ලාන ව්‍යාකරණ මූලධර්ම.
+    """)
+
+st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Deep Pali Grammar Engine</div>", unsafe_allow_html=True)
