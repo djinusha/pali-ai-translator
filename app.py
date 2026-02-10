@@ -84,18 +84,15 @@ with tab1:
     st.session_state.pali_text = pali_input
 
     if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
-        # ERROR HANDLING: ඇතුළත් කිරීම් පරීක්ෂාව
         if not pali_input.strip():
-            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න. (Please enter Pali text.)")
+            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
         elif model:
             with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
                 1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
-                2. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number).
-                3. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table including Root, Case/Tense, Gender, and Number.
-                4. Explain complex Sandhi or Samasa.
-                5. Explain the context (Nidana).
+                2. Identify the exact source in the Tipitaka.
+                3. Provide a DEEP GRAMMATICAL ANALYSIS in a table.
                 """
                 try:
                     response = model.generate_content(prompt)
@@ -103,13 +100,12 @@ with tab1:
                     st.info(response.text)
                     
                     st.divider()
-                    # සෘජු මූලාශ්‍ර සබැඳි - වඩාත් ආරක්ෂිත URL භාවිතා කර ඇත
-                    st.markdown("#### 🔗 මූලාශ්‍ර ගවේෂණය (Verified Resources):")
-                    link_col1, link_col2 = st.columns(2)
-                    with link_col1:
-                        # පින්තූරයේ තිබූ දෝෂය මගහැරවීමට සෙවුම් පිටුවට යොමු කර ඇත
+                    # සෘජු මූලාශ්‍ර සබැඳි එක් කිරීම
+                    st.markdown("#### 🔗 මූලාශ්‍ර ගවේෂණය (Verified Links):")
+                    l_col1, l_col2 = st.columns(2)
+                    with l_col1:
                         st.link_button("📖 Tipitaka.lk මගින් සොයන්න", "https://tipitaka.lk/search", use_container_width=True)
-                    with link_col2:
+                    with l_col2:
                         st.link_button("🌐 SuttaCentral මගින් කියවන්න", "https://suttacentral.net/pitaka/sutta", use_container_width=True)
                         
                 except Exception as e:
@@ -121,17 +117,13 @@ with tab2:
     
     if st.button("Translate to Pali", type="primary", use_container_width=True):
         if not eng_input.strip():
-            st.warning("⚠️ Please enter English text to translate.")
+            st.warning("⚠️ Please enter text to translate.")
         elif model:
             with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
-                prompt = f"""
-                1. Translate this English text to Classical Pali with correct diacritics: "{eng_input}"
-                2. Provide a step-by-step grammatical explanation.
-                3. Mention relevant rules from Pali grammar (Kaccayana/Moggalana).
-                """
+                prompt = f"Translate this English text to Classical Pali with grammatical notes: {eng_input}"
                 try:
                     response = model.generate_content(prompt)
-                    st.success("#### Pali Translation & Deep Grammar Guide:")
+                    st.success("#### Pali Translation:")
                     st.write(response.text)
                 except Exception as e:
                     st.error(f"Error: {e}")
@@ -142,7 +134,6 @@ with tab3:
     st.markdown("""
     <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
     <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව</a></div>
-    <div class="resource-link"><b>Digital Pali Reader:</b> <a href="https://www.digitalpalireader.online/">පද විශ්ලේෂණය</a></div>
     <div class="resource-link"><b>WisdomLib:</b> <a href="https://www.wisdomlib.org/pali-dictionary">පාලි - ඉංග්‍රීසි ශබ්දකෝෂය</a></div>
     """, unsafe_allow_html=True)
 
