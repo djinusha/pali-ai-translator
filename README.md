@@ -1,22 +1,41 @@
 # ☸️ Pali AI Universal Scholar
 
-A specialized AI-powered tool designed for Pali language learners, researchers, and Tipitaka scholars.
+A specialized AI-powered research tool designed for Pali language learners, researchers, and Tipitaka scholars.
+පාලි භාෂාව හදාරන්නන්, පර්යේෂකයන් සහ ත්‍රිපිටක විද්වතුන් සඳහා නිර්මාණය කරන ලද AI තාක්ෂණයෙන් ක්‍රියා කරන විශේෂිත පර්යේෂණ මෙවලමකි.
 
-## 🚀 Live Demo
-[Click here to access the app](https://pali-ai-translator-jb9jypydng2octiqtfhnsq.streamlit.app/)
+## 🚀 Live Demo | සජීවී ඇප් එකට පිවිසෙන්න
+[Click here to access the app / ඇප් එක භාවිතා කිරීමට මෙතැන ක්ලික් කරන්න](https://pali-ai-translator-jb9jypydng2octiqtfhnsq.streamlit.app/)
 
+---
 
-## ✨ Key Features
-* **Multi-language Translation:** Instant translation from Pali to both Sinhala and English.
-* **In-depth Grammar (Padavigga):** Detailed word breakdown including Roots (Dhatu), Vibhakti (Cases), Gender, and Number.
-* **Tipitaka Source Finder:** Automatically identifies the Nikaya, Sutta, and Verse references.
-* **Contextual Resources:** Direct links to SuttaCentral and Tipitaka.lk for verified sources.
-* **Pali Diacritics Keyboard:** Easy-to-use virtual keyboard for typing special Pali characters (ā, ī, ū, ṃ, etc.).
+## ✨ Key Features | ප්‍රධාන විශේෂාංග
 
-## 🛠️ Tech Stack
+* **Trilingual Translation | භාෂා ත්‍රිත්වයෙන්ම පරිවර්තනය:**
+  Instant translation from Pali to both Sinhala and English.
+  පාලි පාඨයන් සිංහල සහ ඉංග්‍රීසි යන භාෂා දෙකටම එකවර පරිවර්තනය කිරීමේ හැකියාව.
+
+* **Deep Grammar (Padavigga) | ගැඹුරු පද විග්‍රහය:**
+  Detailed word-by-word breakdown including Roots (Dhatu), Vibhakti (Cases), Gender, and Number.
+  වචනයෙන් වචනයට ධාතු, විභක්ති, ලිංග සහ වචන ඇතුළත් ගැඹුරු ව්‍යාකරණ විග්‍රහයක් ලබා දීම.
+
+* **Tipitaka Source Finder | ත්‍රිපිටක මූලාශ්‍ර සෙවීම:**
+  Automatically identifies the Nikaya, Sutta, and Verse references.
+  ලබා දෙන පාලි පාඨය අඩංගු නිකාය, සූත්‍රය හෝ ගාථා අංකය ස්වයංක්‍රීයව හඳුනා ගැනීම.
+
+* **Contextual Resources | සෘජු සබැඳි:**
+  Direct links to SuttaCentral and Tipitaka.lk for verified sources.
+  වැඩිදුර පරිශීලනය සඳහා SuttaCentral සහ Tipitaka.lk වැනි විශ්වාසවන්ත මූලාශ්‍ර වෙත සෘජුවම යොමු කිරීම.
+
+* **Pali Diacritics Keyboard | පාලි අක්ෂර පුවරුව:**
+  Virtual keyboard for typing special Pali characters (ā, ī, ū, ṃ, etc.).
+  පාලි භාෂාවට ආවේණික විශේෂ අකුරු පහසුවෙන් ටයිප් කිරීමට ඇති හැකියාව.
+
+---
+
+## 🛠️ Tech Stack | තාක්ෂණික මෙවලම්
 * **Language:** Python
 * **Interface:** Streamlit
 * **AI Engine:** Google Gemini 1.5 Flash
 
 ---
-*created for the Dhamma community by Jinusha Dissanayaka.*
+*Created for the Dhamma community by Jinusha Dissanayaka.*
