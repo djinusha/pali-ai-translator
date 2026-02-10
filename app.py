@@ -20,6 +20,13 @@ st.markdown("""
         padding: 10px;
         border-bottom: 3px solid #8e44ad;
     }
+    .sub-subtitle {
+        text-align: center;
+        color: #633971;
+        font-size: 18px;
+        margin-top: -10px;
+        font-weight: 500;
+    }
     .resource-link {
         background-color: #f4ecf7;
         padding: 10px;
@@ -53,16 +60,15 @@ def load_model():
 
 model = load_model()
 
-# 4. Header (මෙහි ඇති ඔබ ඉල්ලා සිටි පේළිය ඉවත් කර ඇත)
+# 4. Header (වැදගත් කොටස සහිතව)
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<p class='sub-subtitle'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["🔄 පාලි ➔ සිංහල/English", "🔡 English ➔ පාලි", "📚 බාහිර මූලාශ්‍ර"])
 
 # --- Tab 1: පාලි සිට අනෙක් භාෂාවලට ---
 with tab1:
-    # මෙතැනින්ද එම නම ඉවත් කර සරලව සකස් කළා
     if 'pali_text' not in st.session_state:
         st.session_state.pali_text = ""
 
