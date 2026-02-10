@@ -3,8 +3,8 @@
 A specialized AI-powered tool designed for Pali language learners, researchers, and Tipitaka scholars.
 
 ## 🚀 Live Demo
-[Click here to access the app](https://pali-ai-translator.streamlit.app/) 
-*(සටහන: මෙතැනට ඔබේ සැබෑ Streamlit Link එක ඇතුළත් කරන්න)*
+[Click here to access the app](https://pali-ai-translator-jb9jypydng2octiqtfhnsq.streamlit.app/)
+
 
 ## ✨ Key Features
 * **Multi-language Translation:** Instant translation from Pali to both Sinhala and English.
