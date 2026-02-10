@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CSS Styling (අතුරුමුහුණත අලංකාර කිරීමට) ---
+# --- CSS Styling (Interface එක අලංකාර කිරීමට) ---
 st.markdown("""
     <style>
     .stApp { background-color: #fdfaf5; }
@@ -45,9 +45,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. API Keys කළමනාකරණය සහ Model තෝරා ගැනීම
+# 2. API Keys කළමනාකරණය සහ Model එක තෝරා ගැනීම
 def load_model():
-    # Secrets තුළ ඇති Keys සොයා ගැනීම
+    # Secrets තුළ ඇති Keys ලැයිස්තුවකට ගැනීම
     keys = []
     for i in range(1, 6):
         key_name = f"GEMINI_API_KEY_{i}"
@@ -63,24 +63,32 @@ def load_model():
 
     # අහඹු ලෙස Key එකක් තෝරාගෙන Configure කිරීම
     selected_key = random.choice(keys)
-    genai.configure(api_key=selected_key)
-
-    # 404 දෝෂය මඟහරවා ගැනීමට වඩාත් විශ්වාසදායක මාදිලි ලැයිස්තුව
-    # මෙහිදී 'models/' කොටස ඉවත් කර සෘජුවම නම භාවිතා කිරීම වඩාත් ස්ථායී වේ
-    model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
     
-    for name in model_names:
-        try:
-            model = genai.GenerativeModel(name)
-            return model
-        except:
-            continue
-    return None
+    try:
+        genai.configure(api_key=selected_key)
+        
+        # 404 දෝෂය මඟහරවා ගැනීමට වඩාත් විශ්වාසදායක මාදිලි ලැයිස්තුව
+        # 'models/' කොටස ඉවත් කර නම පමණක් භාවිතා කිරීමෙන් දෝෂය අවම වේ
+        model_priority = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        
+        selected_model = None
+        # පවතින මාදිලි පරීක්ෂා කිරීම
+        for name in model_priority:
+            try:
+                # සෘජුවම මාදිලිය උත්සාහ කරන්න
+                model = genai.GenerativeModel(name)
+                return model
+            except:
+                continue
+        return None
+    except Exception as e:
+        st.error(f"සම්බන්ධතාවයේ දෝෂයකි: {e}")
+        return None
 
-# 3. AI විශ්ලේෂණය සඳහා Caching ක්‍රමය (දෝෂ හැසිරවීම සහිතව)
+# 3. AI විශ්ලේෂණය සඳහා Caching ක්‍රමය
 @st.cache_data(show_spinner=False)
 def get_pali_analysis(pali_input):
-    model = load_model() # සෑම Request එකකදීම අලුත් Key එකක් උත්සාහ කරයි
+    model = load_model() # සෑම වරකම Key එකක් Rotate කර ගනී
     if model:
         prompt = f"""
         As a world-class Pali Philologist and Tipitaka scholar:
@@ -91,28 +99,28 @@ def get_pali_analysis(pali_input):
         5. Explain the context (Nidana).
         """
         try:
+            # generate_content භාවිතයේදී version ස්වයංක්‍රීයව පාලනය වේ
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:
             if "429" in str(e):
                 return "⚠️ Quota සීමාව ඉක්මවා ඇත. කරුණාකර විනාඩියකින් උත්සාහ කරන්න."
-            return f"AI දෝෂයකි: {str(e)}"
+            return f"AI පද්ධතියේ දෝෂයකි: {str(e)}"
     return "AI මාදිලිය සක්‍රීය කිරීමට නොහැකි විය."
 
-# 4. Interface Header
+# --- UI Header ---
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
 st.markdown("<p class='sub-subtitle'>පරිවර්තනය, ව්‍යාකරණ සහ මූලාශ්‍ර සහිත පූර්ණ පද්ධතිය</p>", unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["🔄 පාලි ➔ සිංහල/English", "🔡 English ➔ පාලි", "📚 බාහිර මූලාශ්‍ර"])
 
-# --- Tab 1: පාලි සිට අනෙක් භාෂාවලට ---
 with tab1:
     if 'pali_text' not in st.session_state: st.session_state.pali_text = ""
     with st.expander("⌨️ පාලි විශේෂ අකුරු පුවරුව"):
         char_list = ['ā', 'ī', 'ū', 'ṃ', 'ṇ', 'ḷ', 'ṭ', 'ḍ', 'ñ', 'ṅ', 'ṇḍ']
         cols = st.columns(6)
         for i, char in enumerate(char_list):
-            if cols[i % 6].button(char, key=f"kb_{char}"):
+            if cols[i % 6].button(char, key=f"kb_{char}", use_container_width=True):
                 st.session_state.pali_text += char
                 st.rerun()
 
@@ -121,14 +129,13 @@ with tab1:
 
     if st.button("විශ්ලේෂණය කර මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
         if pali_input.strip():
-            with st.spinner('AI පද්ධතිය මගින් ගැඹුරු විශ්ලේෂණයක් සිදුකරමින් පවතී...'):
+            with st.spinner('AI පද්ධතිය මගින් ගැඹුරු පර්යේෂණයක් සිදුකරමින් පවතී...'):
                 result = get_pali_analysis(pali_input)
                 st.markdown("### 📖 ප්‍රතිඵලය:")
                 st.info(result)
         else:
             st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
 
-# --- Tab 2: ඉංග්‍රීසි සිට පාලි ---
 with tab2:
     eng_input = st.text_area("Enter English text:", height=150, placeholder="Type English here...")
     if st.button("Translate to Pali", type="primary", use_container_width=True):
@@ -142,7 +149,6 @@ with tab2:
                     except Exception as e:
                         st.error(f"දෝෂයකි: {e}")
 
-# --- Tab 3: බාහිර මූලාශ්‍ර ---
 with tab3:
     st.markdown("### 📚 පාලි ධර්ම ග්‍රන්ථ සහ ශබ්දකෝෂ")
     st.markdown("""
