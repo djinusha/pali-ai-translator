@@ -60,7 +60,7 @@ def load_model():
 
 model = load_model()
 
-# 4. Header (වැදගත් කොටස සහිතව)
+# 4. Header
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
 st.markdown("<p class='sub-subtitle'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
 
@@ -84,7 +84,10 @@ with tab1:
     st.session_state.pali_text = pali_input
 
     if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
-        if pali_input and model:
+        # --- ERROR HANDLING ---
+        if not pali_input.strip():
+            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න. (Please enter Pali text.)")
+        elif model:
             with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
@@ -99,6 +102,16 @@ with tab1:
                     response = model.generate_content(prompt)
                     st.markdown("### 📖 විශ්ලේෂණය:")
                     st.info(response.text)
+                    
+                    st.divider()
+                    # --- DIRECT SOURCE LINKS ---
+                    st.markdown("#### 🔗 ක්ෂණික මූලාශ්‍ර සබැඳි (Quick Links):")
+                    link_col1, link_col2 = st.columns(2)
+                    with link_col1:
+                        st.link_button("📖 Tipitaka.lk මගින් කියවන්න", "https://tipitaka.lk/", use_container_width=True)
+                    with link_col2:
+                        st.link_button("🌐 SuttaCentral මගින් කියවන්න", "https://suttacentral.net/", use_container_width=True)
+                        
                 except Exception as e:
                     st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
 
@@ -107,7 +120,10 @@ with tab2:
     eng_input = st.text_area("Enter English text:", height=150, placeholder="Type English here...")
     
     if st.button("Translate to Pali", type="primary", use_container_width=True):
-        if eng_input and model:
+        # --- ERROR HANDLING ---
+        if not eng_input.strip():
+            st.warning("⚠️ Please enter English text to translate.")
+        elif model:
             with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
                 prompt = f"""
                 1. Translate this English text to Classical Pali with correct diacritics: "{eng_input}"
