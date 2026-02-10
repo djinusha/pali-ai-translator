@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CSS Styling ---
+# --- CSS Styling (අතුරුමුහුණත අලංකාර කිරීමට) ---
 st.markdown("""
     <style>
     .stApp { background-color: #fdfaf5; }
@@ -45,7 +45,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. API Keys සහ Model තෝරා ගැනීම (Error Handling සමඟ)
+# 2. API Keys කළමනාකරණය සහ Model තෝරා ගැනීම
 def load_model():
     # Secrets තුළ ඇති Keys සොයා ගැනීම
     keys = []
@@ -61,42 +61,43 @@ def load_model():
         st.error("❌ API Keys කිසිවක් හමු නොවීය. කරුණාකර Secrets පරීක්ෂා කරන්න.")
         return None
 
+    # අහඹු ලෙස Key එකක් තෝරාගෙන Configure කිරීම
     selected_key = random.choice(keys)
     genai.configure(api_key=selected_key)
 
-    # 404 දෝෂය මඟහරවා ගැනීමට නිවැරදි මාදිලි නාමයන් පරීක්ෂා කිරීම
-    # models/gemini-1.5-flash වෙනුවට gemini-1.5-flash ලෙස භාවිතය වඩාත් සුදුසුයි
+    # 404 දෝෂය මඟහරවා ගැනීමට වඩාත් විශ්වාසදායක මාදිලි ලැයිස්තුව
+    # මෙහිදී 'models/' කොටස ඉවත් කර සෘජුවම නම භාවිතා කිරීම වඩාත් ස්ථායී වේ
     model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
     
     for name in model_names:
         try:
             model = genai.GenerativeModel(name)
-            # කුඩා පරීක්ෂණයක් (Test request එකක් නොයවා සරලව model එක return කරයි)
             return model
         except:
             continue
     return None
 
-model = load_model()
-
-# 3. AI ප්‍රතිචාර ලබා ගැනීම (Caching සමඟ)
+# 3. AI විශ්ලේෂණය සඳහා Caching ක්‍රමය (දෝෂ හැසිරවීම සහිතව)
 @st.cache_data(show_spinner=False)
 def get_pali_analysis(pali_input):
+    model = load_model() # සෑම Request එකකදීම අලුත් Key එකක් උත්සාහ කරයි
     if model:
         prompt = f"""
         As a world-class Pali Philologist and Tipitaka scholar:
         1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
         2. Identify the exact source in the Tipitaka.
         3. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table.
-        4. List relevant references to SuttaCentral.net or Tipitaka.lk.
+        4. List 3-5 relevant references to SuttaCentral.net or Tipitaka.lk.
         5. Explain the context (Nidana).
         """
         try:
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:
-            return f"AI ප්‍රතිචාරයේ දෝෂයකි: {str(e)}"
-    return "AI මාදිලිය සක්‍රීය නැත."
+            if "429" in str(e):
+                return "⚠️ Quota සීමාව ඉක්මවා ඇත. කරුණාකර විනාඩියකින් උත්සාහ කරන්න."
+            return f"AI දෝෂයකි: {str(e)}"
+    return "AI මාදිලිය සක්‍රීය කිරීමට නොහැකි විය."
 
 # 4. Interface Header
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
@@ -104,6 +105,7 @@ st.markdown("<p class='sub-subtitle'>පරිවර්තනය, ව්‍ය�
 
 tab1, tab2, tab3 = st.tabs(["🔄 පාලි ➔ සිංහල/English", "🔡 English ➔ පාලි", "📚 බාහිර මූලාශ්‍ර"])
 
+# --- Tab 1: පාලි සිට අනෙක් භාෂාවලට ---
 with tab1:
     if 'pali_text' not in st.session_state: st.session_state.pali_text = ""
     with st.expander("⌨️ පාලි විශේෂ අකුරු පුවරුව"):
@@ -114,29 +116,39 @@ with tab1:
                 st.session_state.pali_text += char
                 st.rerun()
 
-    pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150)
+    pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150, placeholder="ගාථාවක් හෝ පාලි පාඨයක් මෙහි ඇතුළත් කරන්න...")
     st.session_state.pali_text = pali_input
 
-    if st.button("Analyze Pali", type="primary", use_container_width=True):
+    if st.button("විශ්ලේෂණය කර මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
         if pali_input.strip():
-            with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
+            with st.spinner('AI පද්ධතිය මගින් ගැඹුරු විශ්ලේෂණයක් සිදුකරමින් පවතී...'):
                 result = get_pali_analysis(pali_input)
                 st.markdown("### 📖 ප්‍රතිඵලය:")
                 st.info(result)
+        else:
+            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
 
+# --- Tab 2: ඉංග්‍රීසි සිට පාලි ---
 with tab2:
-    eng_input = st.text_area("Enter English text:", height=150)
-    if st.button("Translate to Pali", type="primary"):
-        if eng_input.strip() and model:
-            with st.spinner('Translating...'):
-                response = model.generate_content(f"Translate to Classical Pali: {eng_input}")
-                st.success(response.text)
+    eng_input = st.text_area("Enter English text:", height=150, placeholder="Type English here...")
+    if st.button("Translate to Pali", type="primary", use_container_width=True):
+        if eng_input.strip():
+            model = load_model()
+            if model:
+                with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
+                    try:
+                        response = model.generate_content(f"Translate to Classical Pali: {eng_input}")
+                        st.success(response.text)
+                    except Exception as e:
+                        st.error(f"දෝෂයකි: {e}")
 
+# --- Tab 3: බාහිර මූලාශ්‍ර ---
 with tab3:
-    st.markdown("### 📚 පාලි සම්පත්")
+    st.markdown("### 📚 පාලි ධර්ම ග්‍රන්ථ සහ ශබ්දකෝෂ")
     st.markdown("""
-    <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය</a></div>
-    <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">සූත්‍ර එකතුව</a></div>
+    <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
+    <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව</a></div>
+    <div class="resource-link"><b>Access to Insight:</b> <a href="https://www.accesstoinsight.org/">ථේරවාද බෞද්ධ ලිපි</a></div>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Powered by Gemini AI</div>", unsafe_allow_html=True)
