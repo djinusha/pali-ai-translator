@@ -91,22 +91,33 @@ with tab1:
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
                 1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
-                2. Identify the exact source in the Tipitaka.
+                2. Identify the exact source in the Tipitaka (Nikaya, Sutta, or Verse).
                 3. Provide a DEEP GRAMMATICAL ANALYSIS in a table.
+                4. Mention the context (Nidana).
                 """
                 try:
                     response = model.generate_content(prompt)
-                    st.markdown("### 📖 විශ්ලේෂණය:")
+                    st.markdown("### 📖 විශ්ලේෂණය (Analysis Result):")
                     st.info(response.text)
                     
                     st.divider()
-                    # සෘජු මූලාශ්‍ර සබැඳි එක් කිරීම
-                    st.markdown("#### 🔗 මූලාශ්‍ර ගවේෂණය (Verified Links):")
-                    l_col1, l_col2 = st.columns(2)
-                    with l_col1:
-                        st.link_button("📖 Tipitaka.lk මගින් සොයන්න", "https://tipitaka.lk/search", use_container_width=True)
-                    with l_col2:
-                        st.link_button("🌐 SuttaCentral මගින් කියවන්න", "https://suttacentral.net/pitaka/sutta", use_container_width=True)
+                    
+                    # --- DIRECT RESOURCE LINKS ---
+                    st.markdown("#### 🔗 මූලාශ්‍ර ගවේෂණය (Search Exact Source):")
+                    st.write("ඉහත සඳහන් කළ මූලාශ්‍රය තහවුරු කර ගැනීමට පහත වෙබ් අඩවි භාවිතා කරන්න:")
+                    
+                    # මූලාශ්‍ර බොත්තම් පේළි දෙකකට සැකසීම
+                    row1_col1, row1_col2 = st.columns(2)
+                    with row1_col1:
+                        st.link_button("📖 Tipitaka.lk (Sinhala Search)", "https://tipitaka.lk/search", use_container_width=True)
+                    with row1_col2:
+                        st.link_button("🌐 SuttaCentral (English/Multi)", "https://suttacentral.net/pitaka/sutta", use_container_width=True)
+                    
+                    row2_col1, row2_col2 = st.columns(2)
+                    with row2_col1:
+                        st.link_button("🔍 Digital Pali Reader", "https://www.digitalpalireader.online/", use_container_width=True)
+                    with row2_col2:
+                        st.link_button("📖 Access to Insight", "https://www.accesstoinsight.org/", use_container_width=True)
                         
                 except Exception as e:
                     st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
@@ -135,6 +146,7 @@ with tab3:
     <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
     <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව</a></div>
     <div class="resource-link"><b>WisdomLib:</b> <a href="https://www.wisdomlib.org/pali-dictionary">පාලි - ඉංග්‍රීසි ශබ්දකෝෂය</a></div>
+    <div class="resource-link"><b>PTS:</b> <a href="https://www.pts.org.uk/">Pali Text Society නිල වෙබ් අඩවිය</a></div>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Powered by Gemini AI</div>", unsafe_allow_html=True)
