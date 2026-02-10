@@ -19,4 +19,4 @@ A specialized AI-powered tool designed for Pali language learners, researchers, 
 * **AI Engine:** Google Gemini 1.5 Flash
 
 ---
-*Created with ❤️ for the Dhamma community by Jinusha Dissanayaka.*
+*created for the Dhamma community by Jinusha Dissanayaka.*
