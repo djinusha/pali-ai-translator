@@ -3,39 +3,29 @@ import google.generativeai as genai
 
 # 1. පිටුවේ සැකසුම්
 st.set_page_config(
-    page_title="Pali AI Scholar", 
+    page_title="Pali AI Universal Scholar", 
     page_icon="☸️", 
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    layout="wide"
 )
 
-# --- CSS Styling ---
+# --- CSS මගින් මුහුණත හැඩගැන්වීම ---
 st.markdown("""
     <style>
     .stApp { background-color: #fdfaf5; }
     .main-title { 
         color: #4a235a; 
         text-align: center; 
-        font-size: 26px; 
+        font-size: 30px; 
         font-weight: bold; 
         padding: 10px;
-        border-bottom: 2px solid #8e44ad;
-        margin-bottom: 15px;
+        border-bottom: 3px solid #8e44ad;
     }
-    /* Keyboard බොත්තම් කුඩා සහ පිරිසිදු කිරීම */
-    .pali-key {
-        margin: 2px;
-    }
-    /* Footer සැකසුම */
     .footer { 
         position: relative;
-        left: 0; bottom: 0; width: 100%; 
-        background-color: #f1f1f1; 
-        color: #4a235a; 
         text-align: center; 
-        padding: 15px; 
-        margin-top: 30px;
-        border-top: 1px solid #ddd; 
+        padding: 20px; 
+        color: #7d3c98;
+        font-weight: bold;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -45,20 +35,23 @@ if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    st.error("API Key missing!")
+    st.error("API Key missing in Secrets!")
 
 # 4. Header
-st.markdown("<div class='main-title'>☸️ Pali AI Scholar</div>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Pali-Sinhala-English භාෂා ත්‍රිත්වයෙන්ම ක්‍රියාත්මක වන පද්ධතිය</p>", unsafe_allow_html=True)
 
-# Tabs
-tab1, tab2, tab3 = st.tabs(["🔍 පාලි ➔ සිංහල", "🔡 English ➔ Pali", "📚 Resources"])
+# Tabs - මෙන්න මෙතැනින් තමයි ඔබ ඉල්ලූ පරිදි කොටස් වෙන් වෙන්නේ
+tab1, tab2, tab3 = st.tabs(["🔄 Pali to Sinhala & English", "🔡 English to Pali", "📚 Resources"])
 
+# --- Tab 1: පාලි සිට සිංහල සහ ඉංග්‍රීසි ---
 with tab1:
-    # Session state for text
+    st.subheader("පාලි පාඨයක් සිංහලට සහ ඉංග්‍රීසියට පරිවර්තනය")
+    
     if 'pali_text' not in st.session_state:
         st.session_state.pali_text = ""
 
-    # --- අයිකනයක් සහිතව කීබෝඩ් එක සැඟවීම (Hidden Keyboard) ---
+    # සැඟවිය හැකි කීබෝඩ් එක
     with st.expander("⌨️ පාලි විශේෂ අකුරු පුවරුව (Open Keyboard)"):
         char_list = ['ā', 'ī', 'ū', 'ṃ', 'ṇ', 'ḷ', 'ṭ', 'ḍ', 'ñ', 'ṅ', 'ṇḍ']
         cols = st.columns(6)
@@ -66,44 +59,50 @@ with tab1:
             if cols[i % 6].button(char, key=f"kb_{char}", use_container_width=True):
                 st.session_state.pali_text += char
                 st.rerun()
-        
-        if st.button("❌ පිරිසිදු කරන්න (Clear Text)", use_container_width=True):
-            st.session_state.pali_text = ""
-            st.rerun()
 
-    # Input area
-    pali_input = st.text_area("පාලි පාඨය ඇතුළත් කරන්න:", value=st.session_state.pali_text, height=150, placeholder="මෙහි ටයිප් කරන්න...")
-    
-    # Update session state manually if user types
+    pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150, placeholder="පාලි වාක්‍යය හෝ ගාථාව මෙහි ඇතුළත් කරන්න...")
     st.session_state.pali_text = pali_input
 
-    if st.button("පරිවර්තනය සහ මූලාශ්‍රය සොයන්න", type="primary", use_container_width=True):
+    if st.button("පරිවර්තනය කරන්න (Translate)", type="primary", use_container_width=True):
         if pali_input:
             with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
-                prompt = f"As a Pali expert, identify the source, provide Sinhala/English translations, and word meanings for: {pali_input}"
+                # AI එකට දෙන උපදෙස් වලට සිංහල සහ ඉංග්‍රීසි යන දෙකම ඇතුළත් කළා
+                prompt = f"""
+                As a Pali scholar:
+                1. Translate this text into BOTH Sinhala and English: {pali_input}
+                2. Identify the source (Nikaya/Sutta/Gatha source).
+                3. Provide word-by-word meanings in a table.
+                """
                 try:
                     response = model.generate_content(prompt)
-                    st.markdown("---")
+                    st.markdown("### 📖 ප්‍රතිඵලය (Result):")
                     st.info(response.text)
                 except Exception as e:
                     st.error(f"Error: {e}")
 
+# --- Tab 2: ඉංග්‍රීසි සිට පාලි ---
 with tab2:
-    st.subheader("English to Pali")
-    eng_input = st.text_area("Enter English text:", height=120)
+    st.subheader("ඉංග්‍රීසි පාඨයක් පාලි භාෂාවට (English to Pali)")
+    eng_input = st.text_area("Enter English text or phrase:", height=150, placeholder="Type English here to get Pali translation...")
+    
     if st.button("Translate to Pali", type="primary", use_container_width=True):
         if eng_input:
-            with st.spinner('Translating...'):
-                prompt = f"Translate to Pali with diacritics: {eng_input}"
-                response = model.generate_content(prompt)
-                st.success(response.text)
+            with st.spinner('Translating to Pali...'):
+                prompt = f"Translate this English text into classical Pali with correct diacritics (ā, ī, ṃ, etc.): {eng_input}. Explain the choice of Pali words."
+                try:
+                    response = model.generate_content(prompt)
+                    st.success("#### Pali Translation:")
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
+# Tab 3: Resources
 with tab3:
     st.markdown("### 📚 අධ්‍යයන මූලාශ්‍ර")
     st.markdown("""
-    * [Tipitaka.lk](https://tipitaka.lk/)
-    * [SuttaCentral](https://suttacentral.net/)
-    * [Pali Dictionary](https://www.wisdomlib.org/pali-dictionary)
+    * [Tipitaka.lk](https://tipitaka.lk/) - පාලි ත්‍රිපිටකය සිංහල අර්ථ සහිතව.
+    * [SuttaCentral](https://suttacentral.net/) - පාලි සූත්‍ර ඉංග්‍රීසි ඇතුළු භාෂා ගණනාවකින්.
+    * [WisdomLib](https://www.wisdomlib.org/pali-dictionary) - පාලි-ඉංග්‍රීසි ශබ්දකෝෂය.
     """)
 
 # Footer
