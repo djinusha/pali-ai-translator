@@ -1,6 +1,5 @@
 import streamlit as st
 import google.generativeai as genai
-import random
 
 # 1. පිටුවේ සැකසුම්
 st.set_page_config(
@@ -45,37 +44,23 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. API සහ Model එක තෝරා ගැනීම (දෝෂය නිවැරදි කළ කොටස)
+# 2. API සහ Model එක තෝරා ගැනීම
 def load_model():
-    # Secrets වල GEMINI_API_KEY_1, GEMINI_API_KEY_2... ලෙස Keys තිබිය යුතුය
-    available_keys = []
-    for i in range(1, 6):
-        key_name = f"GEMINI_API_KEY_{i}"
-        if key_name in st.secrets:
-            available_keys.append(st.secrets[key_name])
-    
-    if not available_keys and "GEMINI_API_KEY" in st.secrets:
-        available_keys.append(st.secrets["GEMINI_API_KEY"])
-
-    if not available_keys:
-        st.error("API Keys හමු නොවීය. කරුණාකර Streamlit Secrets පරීක්ෂා කරන්න.")
-        return None
-
-    try:
-        # පවතින Keys අතරින් එකක් අහඹු ලෙස තෝරා ගැනීම
-        selected_key = random.choice(available_keys)
-        genai.configure(api_key=selected_key)
-        
-        # 404 Error එක මඟහැරීමට 'models/' prefix එක ඉවත් කර සෘජුවම නම භාවිතා කරයි
-        # මෙය v1 stable endpoint එකට අනුකූල වේ
-        return genai.GenerativeModel('gemini-1.5-flash')
-    except Exception as e:
-        st.error(f"API සම්බන්ධතාවයේ දෝෂයකි: {e}")
-        return None
+    if "GEMINI_API_KEY" in st.secrets:
+        try:
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            preferred_models = ['models/gemini-1.5-flash', 'models/gemini-pro', 'gemini-1.5-flash']
+            selected_model = next((m for m in preferred_models if m in available_models), available_models[0])
+            return genai.GenerativeModel(selected_model)
+        except Exception as e:
+            st.error(f"API සම්බන්ධතාවයේ දෝෂයකි: {e}")
+            return None
+    return None
 
 model = load_model()
 
-# 4. Header
+# 4. Header (වැදගත් කොටස සහිතව)
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
 st.markdown("<p class='sub-subtitle'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
 
@@ -100,11 +85,11 @@ with tab1:
 
     if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
         if pali_input and model:
-            with st.spinner('ත්‍රිපිටක මූලාශ්‍ර සහ ව්‍යාකරණ විග්‍රහය සොයමින් පවතී...'):
+            with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
-                1. Identify the EXACT SOURCE in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number) for this text: "{pali_input}"
-                2. Translate this text into BOTH Sinhala and English.
+                1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
+                2. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number).
                 3. Provide direct references to SuttaCentral.net or Tipitaka.lk.
                 4. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table including Root, Case/Tense, Gender, and Number.
                 5. Explain complex Sandhi or Samasa.
