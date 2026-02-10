@@ -60,9 +60,9 @@ def load_model():
 
 model = load_model()
 
-# 4. Header (වැදගත් කොටස සහිතව)
+# Header
 st.markdown("<div class='main-title'>☸️ Pali AI Universal Scholar</div>", unsafe_allow_html=True)
-st.markdown("<p class='sub-subtitle'>මූලාශ්‍ර සහ අතිරේක සම්පත් සහිත පූර්ණ පරිවර්තන පද්ධතිය</p>", unsafe_allow_html=True)
+st.markdown("<p class='sub-subtitle'>පරිවර්තනය, මූලාශ්‍ර සහ ශාස්ත්‍රීය ලිපි සබැඳි සහිත පද්ධතිය</p>", unsafe_allow_html=True)
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["🔄 පාලි ➔ සිංහල/English", "🔡 English ➔ පාලි", "📚 බාහිර මූලාශ්‍ර"])
@@ -83,52 +83,57 @@ with tab1:
     pali_input = st.text_area("Pali Text:", value=st.session_state.pali_text, height=150, placeholder="ගාථාවක් හෝ පාලි පාඨයක් මෙහි ඇතුළත් කරන්න...")
     st.session_state.pali_text = pali_input
 
-    if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
-        if pali_input and model:
-            with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
+    if st.button("පරිවර්තනය සහ අදාළ ලිපි සොයන්න", type="primary", use_container_width=True):
+        if not pali_input.strip():
+            st.warning("⚠️ කරුණාකර පාලි පාඨයක් ඇතුළත් කරන්න.")
+        elif model:
+            with st.spinner('ගැඹුරු විශ්ලේෂණයක් සිදුකරමින් පවතී...'):
+                # මම මෙහි Prompt එක වෙනස් කළා ලිපි සහ ලින්ක් ලබා දීමට
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
                 1. Translate this Pali text into BOTH Sinhala and English: "{pali_input}"
-                2. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number).
-                3. Provide direct references to SuttaCentral.net or Tipitaka.lk.
-                4. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table including Root, Case/Tense, Gender, and Number.
-                5. Explain complex Sandhi or Samasa.
-                6. Explain the context (Nidana).
+                2. Identify the exact source in the Tipitaka.
+                3. Provide a DEEP GRAMMATICAL ANALYSIS in a table.
+                4. List 3-5 relevant external article links or search queries for sites like SuttaCentral, Access to Insight, or WisdomLib that would help a student learn more about THIS SPECIFIC text/topic.
+                5. Explain the context (Nidana).
                 """
                 try:
                     response = model.generate_content(prompt)
-                    st.markdown("### 📖 විශ්ලේෂණය:")
+                    st.markdown("### 📖 විශ්ලේෂණය සහ නිර්දේශිත ලිපි:")
                     st.info(response.text)
+                    
+                    st.divider()
+                    
+                    # ස්ථාවර මූලාශ්‍ර බොත්තම්
+                    st.markdown("#### 🔗 ක්ෂණික පර්යේෂණ සබැඳි (Quick Research Links):")
+                    row1_col1, row1_col2 = st.columns(2)
+                    with row1_col1:
+                        st.link_button("📖 Tipitaka.lk (Search)", "https://tipitaka.lk/search", use_container_width=True)
+                    with row1_col2:
+                        st.link_button("🌐 SuttaCentral (Explore)", "https://suttacentral.net/", use_container_width=True)
+                        
                 except Exception as e:
                     st.error(f"පරිවර්තනය අසාර්ථක විය: {e}")
 
-# --- Tab 2: ඉංග්‍රීසි සිට පාලි ---
+# --- Tab 2: ඉංග්‍රීසි සිට පාලි --- (එලෙසම පවතී)
 with tab2:
     eng_input = st.text_area("Enter English text:", height=150, placeholder="Type English here...")
-    
     if st.button("Translate to Pali", type="primary", use_container_width=True):
-        if eng_input and model:
-            with st.spinner('පරිවර්තනය වෙමින් පවතී...'):
-                prompt = f"""
-                1. Translate this English text to Classical Pali with correct diacritics: "{eng_input}"
-                2. Provide a step-by-step grammatical explanation.
-                3. Mention relevant rules from Pali grammar (Kaccayana/Moggalana).
-                """
-                try:
-                    response = model.generate_content(prompt)
-                    st.success("#### Pali Translation & Deep Grammar Guide:")
-                    st.write(response.text)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+        if not eng_input.strip(): st.warning("⚠️ Please enter text.")
+        elif model:
+            with st.spinner('Processing...'):
+                prompt = f"Translate to Pali with grammatical notes: {eng_input}"
+                response = model.generate_content(prompt)
+                st.success(response.text)
 
-# Tab 3: මූලාශ්‍ර
+# Tab 3: මූලාශ්‍ර (යාවත්කාලීන කරන ලදී)
 with tab3:
-    st.markdown("### 📚 පාලි ධර්ම ග්‍රන්ථ සහ ශබ්දකෝෂ")
+    st.markdown("### 📚 වැඩිදුර අධ්‍යයනය සඳහා වැදගත් මූලාශ්‍ර")
     st.markdown("""
-    <div class="resource-link"><b>Tipitaka.lk:</b> <a href="https://tipitaka.lk/">ත්‍රිපිටකය සිංහල අර්ථ සහිතව</a></div>
-    <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">බහුභාෂා සූත්‍ර එකතුව</a></div>
-    <div class="resource-link"><b>Digital Pali Reader:</b> <a href="https://www.digitalpalireader.online/">පද විශ්ලේෂණය</a></div>
-    <div class="resource-link"><b>WisdomLib:</b> <a href="https://www.wisdomlib.org/pali-dictionary">පාලි - ඉංග්‍රීසි ශබ්දකෝෂය</a></div>
+    <div class="resource-link"><b>SuttaCentral:</b> <a href="https://suttacentral.net/">සූත්‍ර පිටකය සහ පරිවර්තන</a></div>
+    <div class="resource-link"><b>Access to Insight:</b> <a href="https://www.accesstoinsight.org/">ථේරවාද දහම් ලිපි එකතුව</a></div>
+    <div class="resource-link"><b>Pali Text Society:</b> <a href="https://www.pts.org.uk/">PTS නිල වෙබ් අඩවිය</a></div>
+    <div class="resource-link"><b>Buddhist Dictionary:</b> <a href="https://www.wisdomlib.org/pali-dictionary">WisdomLib ශබ්දකෝෂය</a></div>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='footer'>Created by Jinusha Dissanayaka | Powered by Gemini AI</div>", unsafe_allow_html=True)
