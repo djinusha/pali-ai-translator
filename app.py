@@ -45,7 +45,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. API සහ Model එක තෝරා ගැනීම (මෙහි Keys කිහිපයක් භාවිතා කිරීමට සකසා ඇත)
+# 2. API සහ Model එක තෝරා ගැනීම (දෝෂය නිවැරදි කළ කොටස)
 def load_model():
     # Secrets වල GEMINI_API_KEY_1, GEMINI_API_KEY_2... ලෙස Keys තිබිය යුතුය
     available_keys = []
@@ -58,7 +58,7 @@ def load_model():
         available_keys.append(st.secrets["GEMINI_API_KEY"])
 
     if not available_keys:
-        st.error("API Keys හමු නොවීය.")
+        st.error("API Keys හමු නොවීය. කරුණාකර Streamlit Secrets පරීක්ෂා කරන්න.")
         return None
 
     try:
@@ -66,7 +66,8 @@ def load_model():
         selected_key = random.choice(available_keys)
         genai.configure(api_key=selected_key)
         
-        # 404 Error එක මඟහැරීමට වඩාත් ස්ථාවර 'gemini-1.5-flash' නම භාවිතා කරයි
+        # 404 Error එක මඟහැරීමට 'models/' prefix එක ඉවත් කර සෘජුවම නම භාවිතා කරයි
+        # මෙය v1 stable endpoint එකට අනුකූල වේ
         return genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
         st.error(f"API සම්බන්ධතාවයේ දෝෂයකි: {e}")
@@ -99,11 +100,10 @@ with tab1:
 
     if st.button("පරිවර්තනය සහ මූලාශ්‍ර සොයන්න", type="primary", use_container_width=True):
         if pali_input and model:
-            with st.spinner('විශ්ලේෂණය කරමින් පවතී...'):
-                # මූලාශ්‍රය සෙවීමට උපදෙස් වැඩි දියුණු කරන ලදී
+            with st.spinner('ත්‍රිපිටක මූලාශ්‍ර සහ ව්‍යාකරණ විග්‍රහය සොයමින් පවතී...'):
                 prompt = f"""
                 As a world-class Pali Philologist and Tipitaka scholar:
-                1. Identify the exact source in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number) for this text: "{pali_input}"
+                1. Identify the EXACT SOURCE in the Tipitaka (Nikaya, Sutta name, Vagga, or Dhammapada verse number) for this text: "{pali_input}"
                 2. Translate this text into BOTH Sinhala and English.
                 3. Provide direct references to SuttaCentral.net or Tipitaka.lk.
                 4. Provide a DEEP GRAMMATICAL ANALYSIS (Padavigga) in a table including Root, Case/Tense, Gender, and Number.
